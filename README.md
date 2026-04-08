@@ -1,36 +1,195 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Outside
 
-## Getting Started
+> 在真实语境中自然习得英语 —— 不是背单词，而是读文章
 
-First, run the development server:
+Outside 是一个 AI 驱动的英语学习平台。它不教你语法规则，不让你死记硬背，而是为你生成**量身定制的阅读内容**：每一篇都是根据你的水平和兴趣创作的，每一个生词都能在后续文章中自然重逢。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 痛点：传统英语学习的问题
+
+你是否经历过这些困境？
+
+> "背了三千个单词，看到美剧还是听不懂"
+> 
+> "单词书翻烂了，一到用的时候全忘了"
+> 
+> "读原版书查生词查到崩溃，最后放弃了"
+
+**问题不在于你，而在于方法。**
+
+- **脱离语境**：孤立的单词记忆无法建立神经联结
+- **枯燥乏味**：重复机械的学习扼杀兴趣
+- **被动学习**：没有主动使用，知识无法内化
+
+## 解决方案：语境驱动的自然习得
+
+Outside 的核心理念很简单：**像母语者一样学习 —— 通过阅读。**
+
+### 核心洞察
+
+记忆研究表明，单词在**不同语境中重复出现**时，记忆效果最佳。Outside 的 **Review Weaving（嵌入式复习）** 机制正是基于这一原理：
+
+```
+你标记的生词 → 系统自动编织进下一篇文章 → 在新场景中重逢 → 自然强化记忆
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+你不是在"复习单词"，而是在读一篇有趣的新文章时，惊讶地发现"这个词我见过"。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 功能亮点
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. AI 生成个性化内容
 
-## Learn More
+选择你感兴趣的主题，AI 为你生成专属文章：
 
-To learn more about Next.js, take a look at the following resources:
+| 主题 | 内容形式 | 适合人群 |
+|------|----------|----------|
+| 日常口语 | 生活场景对话 | 想开口交流的初学者 |
+| 职场英语 | 邮件、会议、汇报 | 工作中的英语使用者 |
+| 雅思备考 | 学术短文、长难句 | 备考雅思的学生 |
+| 科技前沿 | 科技新闻、概念解析 | 程序员、科技爱好者 |
+| 故事阅读 | 短篇故事、寓言 | 喜欢阅读的学习者 |
+| 自由主题 | 你定义任何方向 | 有明确兴趣的学习者 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+支持完全自定义主题 —— 想学医学英语？法律合同？游戏评测？创建你的专属主题即可。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. 智能难度递进
 
-## Deploy on Vercel
+系统追踪你的学习进度，自动调整文章难度：
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+第 1-3 篇：舒适区（85%+ 内容能读懂，建立信心）
+第 4-7 篇：拉伸区（新词增多，句式变复杂）
+第 8 篇起：挑战区（接近真实语料难度）
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+每篇文章都在你能力边界上，既不会无聊，也不会挫败。
+
+### 3. 沉浸式阅读体验
+
+- **划词即标记**：选中生词，自动翻译、加入生词本、播放发音
+- **生词高亮**：文章中的生词用柔和底色标注，复习词用 ⟳ 标记
+- **语境回溯**：生词本中可查看该词在哪些文章中出现过，随时跳回原文
+- **中英对照**：一键切换对照模式
+
+### 4. 灵活的大模型配置
+
+支持多种 AI 供应商，使用你自己的 API Key：
+
+- **Anthropic**（默认）：Claude 系列模型
+- **OpenAI**：GPT-4、GPT-3.5
+- **自定义**：任何兼容 OpenAI 格式的服务（DeepSeek、Ollama、Azure OpenAI 等）
+
+## 技术架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Next.js 15 (App Router)                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │   React 19   │  │  API Routes  │  │  Server Components│  │
+│  │   (前端 UI)   │  │   (后端逻辑)  │  │   (阅读页 SSR)    │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│                      Drizzle ORM                            │
+├─────────────────────────────────────────────────────────────┤
+│                      SQLite (单文件)                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- **全栈框架**：Next.js 15 + React 19 + TypeScript
+- **数据库**：SQLite + Drizzle ORM，单文件部署，零运维
+- **认证**：iron-session（无状态 Cookie Session）
+- **AI 适配**：统一接口屏蔽多供应商差异
+- **TTS**：Web Speech API（默认）+ Edge TTS（可选）
+
+## 快速开始
+
+### 环境要求
+
+- Node.js 18+
+- 一个 Anthropic/OpenAI API Key（或自定义兼容服务）
+
+### 安装
+
+```bash
+# 克隆项目
+git clone https://github.com/your-username/outside.git
+cd outside
+
+# 安装依赖
+npm install
+
+# 配置环境变量
+cp .env.example .env.local
+# 编辑 .env.local，填入 SESSION_SECRET 和 ANTHROPIC_API_KEY
+
+# 初始化数据库
+npm run db:migrate
+
+# 启动开发服务器
+npm run dev
+```
+
+访问 http://localhost:3000
+
+### 生产部署
+
+```bash
+npm run build
+npm start
+```
+
+推荐部署到支持持久化存储的平台（如 Fly.io、Railway），因为 SQLite 需要持久化文件系统。
+
+## 项目结构
+
+```
+outside/
+├── src/
+│   ├── app/              # Next.js App Router
+│   │   ├── (auth)/       # 登录/注册页面
+│   │   ├── (main)/       # 主应用页面
+│   │   │   ├── page.tsx              # 首页
+│   │   │   ├── topics/[id]/          # 主题详情
+│   │   │   ├── articles/[id]/        # 阅读页
+│   │   │   ├── vocabulary/           # 生词本
+│   │   │   └── settings/             # 设置
+│   │   └── api/          # API Routes
+│   ├── db/               # 数据库 schema 和连接
+│   ├── lib/              # 核心逻辑
+│   │   ├── llm/          # 大模型适配器
+│   │   ├── review-weaving.ts  # 复习词筛选算法
+│   │   └── ...
+│   └── components/       # React 组件
+├── docs/                 # 产品文档
+│   ├── prd.md            # 产品需求文档
+│   └── tech.md           # 技术架构文档
+└── drizzle/              # 数据库迁移文件
+```
+
+## 设计哲学
+
+- **Less but Better**：每个功能都经得起"为什么要存在"的拷问
+- **Organic Architecture**：架构从需求中自然生长，而非强加
+- **Ambient Intelligence**：错误提示是信号而非警报，系统行为如光般自然
+- **Invisible Infrastructure**：技术隐于无形，直到被需要的那一刻
+
+UI 遵循**天鹅挽歌美学**——克制、留白、静谧、精确。像电影中的未来居所，安静、通透、不动声色。
+
+## 不做的事
+
+为了保持专注，我们明确不做：
+
+- ❌ 独立的背单词 / 闪卡功能（复习通过文章自然完成）
+- ❌ 社交功能（分享、排行榜、学习小组）
+- ❌ 听力、口语练习
+- ❌ 考试真题训练
+- ❌ 移动端 App（先做好 Web）
+
+## 了解更多
+
+- [产品需求文档](./docs/prd.md) —— 完整的产品设计
+- [技术架构文档](./docs/tech.md) —— 详细的架构设计
+- [提交 Issue](https://github.com/your-username/outside/issues) —— 反馈问题或建议
+
+---
+
+**Outside** —— 走出单词书的边界，在真实语境中遇见英语。
