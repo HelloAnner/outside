@@ -39,6 +39,12 @@ function speak(text: string) {
   window.speechSynthesis.speak(u)
 }
 
+const FAMILIARITY_COLORS: Record<string, string> = {
+  unfamiliar: '#FF3B30',
+  vague: '#FF9500',
+  familiar: '#34C759',
+}
+
 export function VocabularyClient({ words: initialWords, stats }: Props) {
   const [words, setWords] = useState(initialWords)
   const [filter, setFilter] = useState('all')
@@ -78,154 +84,170 @@ export function VocabularyClient({ words: initialWords, stats }: Props) {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <Link href="/" className="text-xs text-secondary hover:text-foreground transition-colors">← 首页</Link>
-          <h1 className="text-xl font-medium mt-2">生词本</h1>
+    <div className="flex h-full">
+      {/* Left panel - word list */}
+      <div className="w-[380px] shrink-0 border-r border-border bg-surface-primary overflow-y-auto flex flex-col">
+        {/* Header */}
+        <div className="px-5 pt-6 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-semibold text-fg-primary">生词本</h1>
+            <div className="relative">
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="搜索..."
+                className="pl-3 pr-3 py-1.5 rounded-lg border border-border bg-surface-card text-[13px] w-36 focus:border-accent transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Filter tabs */}
+          <div className="flex gap-1.5 mb-3">
+            {[
+              { value: 'all', label: '全部' },
+              { value: 'unfamiliar', label: '陌生' },
+              { value: 'vague', label: '模糊' },
+              { value: 'familiar', label: '熟悉' },
+            ].map(f => (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className={`px-3 py-1 text-[12px] rounded-lg transition-colors ${
+                  filter === f.value
+                    ? 'bg-accent text-fg-inverse font-medium'
+                    : 'text-fg-muted hover:bg-surface-secondary'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="搜索..."
-          className="px-3 py-2 border border-border bg-card text-sm w-48"
-        />
-      </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4 mb-6 text-xs">
-        <span className="text-secondary">排序:</span>
-        {['time', 'alpha', 'familiarity'].map(s => (
-          <button
-            key={s}
-            onClick={() => setSort(s)}
-            className={`px-2 py-1 border transition-colors ${sort === s ? 'border-accent bg-accent text-white' : 'border-border'}`}
-          >
-            {{ time: '时间', alpha: '字母', familiarity: '熟练度' }[s]}
-          </button>
-        ))}
-        <span className="text-secondary ml-4">筛选:</span>
-        {['all', 'unfamiliar', 'vague', 'familiar'].map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-2 py-1 border transition-colors ${filter === f ? 'border-accent bg-accent text-white' : 'border-border'}`}
-          >
-            {{ all: '全部', unfamiliar: '陌生', vague: '模糊', familiar: '熟悉' }[f]}
-          </button>
-        ))}
-      </div>
-
-      {/* Main content */}
-      <div className="flex gap-6">
         {/* Word list */}
-        <div className="w-80 shrink-0 border border-border divide-y divide-border max-h-[calc(100vh-12rem)] overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
           {filtered.map(w => (
             <button
               key={w.id}
               onClick={() => setSelectedWord(w)}
-              className={`w-full text-left px-4 py-3 hover:bg-hover transition-colors ${
-                selectedWord?.id === w.id ? 'bg-hover' : ''
+              className={`w-full text-left px-5 py-3 border-b border-border-light hover:bg-surface-card transition-colors ${
+                selectedWord?.id === w.id ? 'bg-surface-card' : ''
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{w.text}</span>
-                <span className="text-xs">
-                  {w.familiarity === 'unfamiliar' ? '●' : w.familiarity === 'vague' ? '○' : '◉'}
-                  <span className="text-tertiary ml-1">
-                    {{ unfamiliar: '陌生', vague: '模糊', familiar: '熟悉' }[w.familiarity]}
-                  </span>
-                </span>
+                <span className="text-[14px] font-medium text-fg-primary">{w.text}</span>
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{ background: FAMILIARITY_COLORS[w.familiarity] || '#8E8E93' }}
+                  />
+                </div>
               </div>
-              <div className="text-xs text-secondary mt-0.5 truncate">{w.definition}</div>
-              {w.reviewCount > 0 && (
-                <div className="text-xs text-blue-400 mt-0.5">&#8635;×{w.reviewCount}</div>
-              )}
+              <div className="text-[12px] text-fg-muted mt-0.5 truncate">{w.definition}</div>
             </button>
           ))}
           {filtered.length === 0 && (
-            <div className="p-6 text-center text-sm text-tertiary">暂无生词</div>
+            <div className="p-6 text-center text-[13px] text-fg-muted">暂无生词</div>
           )}
         </div>
 
-        {/* Detail panel */}
-        <div className="flex-1 min-w-0">
-          {selectedWord ? (
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-lg font-medium">{selectedWord.text}</h2>
-                <button onClick={() => speak(selectedWord.text)} className="text-sm text-secondary hover:text-foreground">
-                  &#128266;
-                </button>
-              </div>
-              {selectedWord.phonetic && <div className="text-sm text-tertiary mb-1">{selectedWord.phonetic}</div>}
-              {selectedWord.pos && <div className="text-xs text-tertiary mb-2">{selectedWord.pos}</div>}
-              <div className="text-sm text-secondary mb-6">{selectedWord.definition}</div>
-
-              {/* Contexts */}
-              {contexts.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-xs text-secondary tracking-widest uppercase mb-3">
-                    出现语境 ({contexts.length}篇文章)
-                  </h3>
-                  <div className="space-y-3">
-                    {contexts.map(ctx => (
-                      <div key={ctx.id} className="border border-border p-3">
-                        <Link
-                          href={`/articles/${ctx.articleId}`}
-                          className="text-xs text-secondary hover:text-foreground transition-colors"
-                        >
-                          #{String(ctx.sequence).padStart(2, '0')} {ctx.articleTitle}
-                        </Link>
-                        <div className="text-sm mt-1.5 italic text-secondary">&ldquo;{ctx.sentence}&rdquo;</div>
-                        {ctx.sentenceTranslation && (
-                          <div className="text-xs text-tertiary mt-1">{ctx.sentenceTranslation}</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Familiarity control */}
-              <div className="border-t border-border pt-4">
-                <h3 className="text-xs text-secondary mb-2">熟练度</h3>
-                <div className="flex gap-2">
-                  {['unfamiliar', 'vague', 'familiar'].map(f => (
-                    <button
-                      key={f}
-                      onClick={() => updateFamiliarity(selectedWord.id, f)}
-                      className={`px-3 py-1.5 text-xs border transition-colors ${
-                        selectedWord.familiarity === f
-                          ? 'border-accent bg-accent text-white'
-                          : 'border-border hover:border-accent'
-                      }`}
-                    >
-                      {{ unfamiliar: '● 陌生', vague: '○ 模糊', familiar: '◉ 熟悉' }[f]}
-                    </button>
-                  ))}
-                </div>
-                <div className="text-xs text-tertiary mt-3">
-                  已复习: {selectedWord.reviewCount} 次
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-64 text-sm text-tertiary">
-              选择左侧单词查看详情
-            </div>
-          )}
+        {/* Stats footer */}
+        <div className="px-5 py-3 border-t border-border flex items-center gap-4 text-[12px] text-fg-muted shrink-0 bg-surface-card">
+          <span>共 {stats.total} 词</span>
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-danger" /> {stats.unfamiliar}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#FF9500' }} /> {stats.vague}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-success" /> {stats.familiar}
+          </span>
         </div>
       </div>
 
-      {/* Stats footer */}
-      <div className="mt-6 pt-4 border-t border-border flex items-center gap-6 text-xs text-secondary">
-        <span>共 {stats.total} 词</span>
-        <span>● 陌生 {stats.unfamiliar}</span>
-        <span>○ 模糊 {stats.vague}</span>
-        <span>◉ 熟悉 {stats.familiar}</span>
+      {/* Right panel - detail */}
+      <div className="flex-1 overflow-y-auto bg-surface-card p-7">
+        {selectedWord ? (
+          <div>
+            <h2 className="text-[28px] font-semibold text-fg-primary mb-2">{selectedWord.text}</h2>
+            <div className="flex items-center gap-3 mb-4">
+              {selectedWord.phonetic && <span className="text-[13px] text-fg-muted">{selectedWord.phonetic}</span>}
+              {selectedWord.pos && <span className="text-[13px] text-accent">{selectedWord.pos}</span>}
+              <button onClick={() => speak(selectedWord.text)} className="text-[13px] text-fg-muted hover:text-accent transition-colors">
+                🔊
+              </button>
+            </div>
+            <div className="text-[15px] text-fg-secondary mb-6">{selectedWord.definition}</div>
+
+            {/* Separator */}
+            <div className="h-px bg-border-light mb-6" />
+
+            {/* Contexts */}
+            {contexts.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-[13px] text-fg-muted mb-4">
+                  出现语境（{contexts.length} 篇文章）
+                </h3>
+                <div className="space-y-4">
+                  {contexts.map(ctx => (
+                    <div key={ctx.id}>
+                      <Link
+                        href={`/articles/${ctx.articleId}`}
+                        className="text-[13px] text-accent hover:underline"
+                      >
+                        日常口语 #{String(ctx.sequence).padStart(2, '0')} — {ctx.articleTitle}
+                      </Link>
+                      <div className="text-[14px] text-fg-secondary mt-1.5 italic leading-relaxed">
+                        &ldquo;{ctx.sentence}&rdquo;
+                      </div>
+                      {ctx.sentenceTranslation && (
+                        <div className="text-[13px] text-fg-muted mt-1">{ctx.sentenceTranslation}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Separator */}
+            <div className="h-px bg-border-light mb-6" />
+
+            {/* Familiarity control */}
+            <div>
+              <h3 className="text-[13px] text-fg-muted mb-3">熟练度</h3>
+              <div className="flex gap-2">
+                {[
+                  { value: 'unfamiliar', label: '陌生', color: '#FF3B30' },
+                  { value: 'vague', label: '模糊', color: '#FF9500' },
+                  { value: 'familiar', label: '熟悉', color: '#34C759' },
+                ].map(f => (
+                  <button
+                    key={f.value}
+                    onClick={() => updateFamiliarity(selectedWord.id, f.value)}
+                    className={`px-4 py-1.5 text-[13px] rounded-lg border transition-colors ${
+                      selectedWord.familiarity === f.value
+                        ? 'text-fg-inverse'
+                        : 'border-border text-fg-secondary hover:border-accent/50'
+                    }`}
+                    style={
+                      selectedWord.familiarity === f.value
+                        ? { background: f.color, borderColor: f.color }
+                        : undefined
+                    }
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-full text-[14px] text-fg-muted">
+            选择左侧单词查看详情
+          </div>
+        )}
       </div>
     </div>
   )

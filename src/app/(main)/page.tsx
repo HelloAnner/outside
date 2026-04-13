@@ -1,7 +1,7 @@
 import { db } from '@/db'
 import { topics, articles, words } from '@/db/schema'
 import { requireAuth } from '@/lib/auth'
-import { eq, desc, and, sql, gt } from 'drizzle-orm'
+import { eq, desc, and, sql } from 'drizzle-orm'
 import { HomeClient } from '@/components/home-client'
 
 export default async function HomePage() {
@@ -11,7 +11,6 @@ export default async function HomePage() {
     .where(eq(topics.userId, userId))
     .orderBy(sql`${topics.isBuiltin} DESC`, topics.createdAt)
 
-  // Convert boolean fields from number to boolean
   const userTopics = rawTopics.map(t => ({
     ...t,
     isBuiltin: Boolean(t.isBuiltin),
@@ -42,7 +41,11 @@ export default async function HomePage() {
     .from(words)
     .where(and(eq(words.userId, userId), sql`${words.createdAt} > ${weekAgoTs}`))
 
-  // Build topic name map for articles
+  // Count distinct reading days
+  const readDaysResult = await db.select({
+    count: sql<number>`count(distinct date(${articles.createdAt}, 'unixepoch'))`,
+  }).from(articles).where(eq(articles.userId, userId))
+
   const topicMap = Object.fromEntries(userTopics.map(t => [t.id, t.name]))
 
   return (
@@ -54,6 +57,7 @@ export default async function HomePage() {
         weekNew: weekNew[0]?.count || 0,
         needReview: (stats[0]?.unfamiliar || 0) + (stats[0]?.vague || 0),
       }}
+      readDays={readDaysResult[0]?.count || 0}
     />
   )
 }

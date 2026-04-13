@@ -65,7 +65,6 @@ export function TopicDetailClient({ topic, articles, nextDifficulty, totalWords,
         return
       }
 
-      // Read stream to get metadata and content
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let fullText = ''
@@ -86,7 +85,6 @@ export function TopicDetailClient({ topic, articles, nextDifficulty, totalWords,
         }
       }
 
-      // Parse the JSON response
       const jsonMatch = fullText.match(/\{[\s\S]*\}/)
       if (jsonMatch && meta) {
         const parsed = JSON.parse(jsonMatch[0])
@@ -123,85 +121,86 @@ export function TopicDetailClient({ topic, articles, nextDifficulty, totalWords,
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
+    <div className="px-9 py-7">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <Link href="/" className="text-xs text-secondary hover:text-foreground transition-colors">
-            ← 返回
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-fg-muted hover:text-fg-secondary transition-colors text-sm">
+            ‹
           </Link>
-          <h1 className="text-xl font-medium mt-3">{topic.name}</h1>
-          <p className="text-sm text-secondary mt-1">{topic.description}</p>
+          <h1 className="text-xl font-semibold text-fg-primary">{topic.name}</h1>
         </div>
         {!topic.isBuiltin && (
           <Link
             href={`/topics/new?edit=${topic.id}`}
-            className="text-xs text-secondary hover:text-foreground border border-border px-3 py-1.5 transition-colors"
+            className="text-[13px] text-fg-muted hover:text-accent border border-border rounded-lg px-3 py-1.5 transition-colors"
           >
             编辑主题
           </Link>
         )}
       </div>
 
-      {/* Stats bar */}
-      <div className="flex items-center gap-8 mb-8 text-sm">
-        <div>
-          <span className="text-secondary">当前难度</span>
-          <div className="flex items-center gap-2 mt-1">
-            <div className="w-32 h-1.5 bg-border">
-              <div className="h-full bg-accent transition-all" style={{ width: `${difficultyPercent}%` }} />
+      <p className="text-[14px] text-fg-muted mb-6 pl-5">{topic.description}</p>
+
+      {/* Meta stats row */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-surface-card rounded-xl border border-border-light px-5 py-4">
+          <div className="text-[13px] text-fg-muted mb-2">当前难度</div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-[6px] bg-surface-secondary rounded-full overflow-hidden">
+              <div
+                className="h-full bg-accent rounded-full transition-all"
+                style={{ width: `${difficultyPercent}%` }}
+              />
             </div>
-            <span className="text-xs">Lv.{nextDifficulty}</span>
+            <span className="text-sm font-medium text-fg-primary">Lv.{nextDifficulty}</span>
           </div>
         </div>
-        <div>
-          <span className="text-secondary">已读</span>
-          <div className="mt-1">{topic.articlesCount} 篇</div>
+        <div className="bg-surface-card rounded-xl border border-border-light px-5 py-4">
+          <div className="text-[13px] text-fg-muted mb-1">已读</div>
+          <div className="text-[22px] font-semibold text-fg-primary">{topic.articlesCount} <span className="text-[14px] font-normal text-fg-muted">篇</span></div>
         </div>
-        <div>
-          <span className="text-secondary">生词</span>
-          <div className="mt-1">{totalWords} 个</div>
+        <div className="bg-surface-card rounded-xl border border-border-light px-5 py-4">
+          <div className="text-[13px] text-fg-muted mb-1">生词</div>
+          <div className="text-[22px] font-semibold text-fg-primary">{totalWords} <span className="text-[14px] font-normal text-fg-muted">个</span></div>
         </div>
       </div>
 
-      {/* Generate button */}
-      <button
-        onClick={handleGenerate}
-        disabled={generating}
-        className="w-full bg-card border border-border p-6 hover:border-accent transition-colors text-center disabled:opacity-50 mb-10"
-      >
-        {generating ? (
-          <div>
-            <div className="text-sm">生成中...</div>
-            <div className="text-xs text-secondary mt-1">正在为你创作新文章</div>
-          </div>
-        ) : (
-          <div>
-            <div className="text-sm">生成下一篇文章</div>
-            <div className="text-xs text-secondary mt-1">
-              难度 Lv.{nextDifficulty} · 约 {config.article_length} 词 · 含 ~{reviewWords} 个复习词
-            </div>
-          </div>
-        )}
-      </button>
+      {/* Generate button card */}
+      <div className="bg-surface-card rounded-xl border border-border-light p-6 mb-6 text-center">
+        <button
+          onClick={handleGenerate}
+          disabled={generating}
+          className="inline-flex items-center gap-2 px-6 py-2.5 bg-accent text-fg-inverse text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-50"
+        >
+          {generating ? (
+            <>生成中...</>
+          ) : (
+            <>✦ 生成下一篇文章</>
+          )}
+        </button>
+        <div className="text-[13px] text-fg-muted mt-3">
+          难度 Lv.{nextDifficulty} · 约 {config.article_length} 词 · 含 ~{reviewWords} 个复习词
+        </div>
+      </div>
 
       {/* Article list */}
       {articles.length > 0 && (
         <section>
-          <h2 className="text-xs text-secondary tracking-widest uppercase mb-4">往期文章</h2>
-          <div className="divide-y divide-border border border-border">
+          <h2 className="text-[13px] text-fg-muted mb-3">往期文章</h2>
+          <div className="bg-surface-card rounded-xl border border-border-light overflow-hidden divide-y divide-border-light">
             {articles.map(a => (
               <Link
                 key={a.id}
                 href={`/articles/${a.id}`}
-                className="flex items-center justify-between px-4 py-3.5 hover:bg-hover transition-colors"
+                className="flex items-center justify-between px-5 py-3.5 hover:bg-surface-primary/50 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-tertiary w-8">#{String(a.sequence).padStart(2, '0')}</span>
-                  <span className="text-sm">{a.title}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-[12px] text-fg-muted w-8 shrink-0">#{String(a.sequence).padStart(2, '0')}</span>
+                  <span className="text-[14px] text-fg-primary truncate">{a.title}</span>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-secondary">
-                  <span>Lv.{a.difficulty}</span>
+                <div className="flex items-center gap-4 text-[12px] text-fg-muted shrink-0 ml-4">
+                  <span className="text-accent bg-accent-light px-2 py-0.5 rounded">Lv.{a.difficulty}</span>
                   <span>{a.wordsCount} 个生词</span>
                   <span>{timeAgo(a.createdAt)}</span>
                 </div>

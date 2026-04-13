@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { WordPanel } from './word-panel'
@@ -66,43 +66,48 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
   } | null>(null)
   const articleRef = useRef<HTMLDivElement>(null)
 
-  // Get set of already-marked words
   const markedWords = new Set(wordContexts.map(wc => wc.text.toLowerCase()))
   const reviewWords = new Set(
     wordContexts.filter(wc => reviewWordIds.includes(wc.wordId)).map(wc => wc.text.toLowerCase())
   )
 
-  // Render content with word highlights
   function renderContent(content: string) {
-    // Split into paragraphs
     const paragraphs = content.split('\n').filter(Boolean)
     return paragraphs.map((p, i) => {
-      // Highlight marked words
-      const tokens = p.split(/(\b\w+\b)/g)
-      return (
-        <p key={i} className="mb-5">
-          {tokens.map((token, j) => {
-            const lower = token.toLowerCase()
-            if (markedWords.has(lower)) {
-              const isReview = reviewWords.has(lower)
-              return (
-                <span
-                  key={j}
-                  className={isReview ? 'word-review cursor-pointer' : 'word-highlight cursor-pointer'}
-                  data-word={lower}
-                >
-                  {token}
-                </span>
-              )
-            }
-            return <span key={j}>{token}</span>
-          })}
-        </p>
-      )
+      // Check if it's a dialogue line (starts with name:)
+      const dialogueMatch = p.match(/^([A-Za-z]+):\s*(.*)$/)
+
+      const tokens = (dialogueMatch ? dialogueMatch[2] : p).split(/(\b\w+\b)/g)
+      const rendered = tokens.map((token, j) => {
+        const lower = token.toLowerCase()
+        if (markedWords.has(lower)) {
+          const isReview = reviewWords.has(lower)
+          return (
+            <span
+              key={j}
+              className={isReview ? 'word-review cursor-pointer' : 'word-highlight cursor-pointer'}
+              data-word={lower}
+            >
+              {token}
+            </span>
+          )
+        }
+        return <span key={j}>{token}</span>
+      })
+
+      if (dialogueMatch) {
+        return (
+          <div key={i} className="flex gap-3 mb-4">
+            <span className="text-accent font-medium text-sm shrink-0 pt-0.5">{dialogueMatch[1]}:</span>
+            <p className="flex-1">{rendered}</p>
+          </div>
+        )
+      }
+
+      return <p key={i} className="mb-5">{rendered}</p>
     })
   }
 
-  // Handle text selection
   const handleMouseUp = useCallback(async () => {
     const selection = window.getSelection()
     if (!selection || selection.isCollapsed) {
@@ -113,7 +118,6 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
     const text = selection.toString().trim()
     if (!text) return
 
-    // Check if single word
     const isSingleWord = /^\w+$/.test(text)
 
     if (settings.autoReadOnSelect) {
@@ -122,18 +126,16 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
 
     if (!isSingleWord) return
 
-    // Get the sentence context
     const anchorNode = selection.anchorNode
     let sentence = ''
     if (anchorNode) {
       let parent = anchorNode.parentElement
-      while (parent && parent.tagName !== 'P' && parent.tagName !== 'LI') {
+      while (parent && parent.tagName !== 'P' && parent.tagName !== 'LI' && parent.tagName !== 'DIV') {
         parent = parent.parentElement
       }
       sentence = parent?.textContent || text
     }
 
-    // Position popover
     const range = selection.getRangeAt(0)
     const rect = range.getBoundingClientRect()
 
@@ -145,7 +147,6 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
       loading: true,
     })
 
-    // Fetch translation
     try {
       const res = await fetch('/api/translate', {
         method: 'POST',
@@ -156,7 +157,6 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
       if (res.ok) {
         setPopover(prev => prev ? { ...prev, loading: false, data } : null)
 
-        // Save word
         await fetch('/api/words', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -171,7 +171,6 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
           }),
         })
 
-        // Add to local state
         if (!markedWords.has(text.toLowerCase())) {
           setWordContexts(prev => [
             ...prev,
@@ -191,124 +190,129 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
           ])
         }
       }
-    } catch (err) {
+    } catch {
       setPopover(prev => prev ? { ...prev, loading: false } : null)
     }
   }, [article.id, settings, markedWords])
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <Link
-          href={`/topics/${topic.id}`}
-          className="text-xs text-secondary hover:text-foreground transition-colors"
-        >
-          ← {topic.name} #{String(article.sequence).padStart(2, '0')}
-        </Link>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => setShowTranslation(!showTranslation)}
-            className={`text-xs px-2.5 py-1 border transition-colors ${
-              showTranslation ? 'border-accent bg-accent text-white' : 'border-border hover:border-accent'
-            }`}
+    <div className="flex h-full">
+      {/* Article area */}
+      <div className="flex-1 overflow-y-auto px-9 py-7">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            href={`/topics/${topic.id}`}
+            className="text-[13px] text-fg-muted hover:text-accent transition-colors"
           >
-            译
-          </button>
-          <Link href="/vocabulary" className="text-xs text-secondary hover:text-foreground border border-border px-2.5 py-1">
-            词
+            ‹ {topic.name} #{String(article.sequence).padStart(2, '0')}
           </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowTranslation(!showTranslation)}
+              className={`text-[13px] px-3 py-1 rounded-lg border transition-colors ${
+                showTranslation
+                  ? 'border-accent bg-accent text-fg-inverse'
+                  : 'border-border text-fg-muted hover:border-accent/50'
+              }`}
+            >
+              译
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Main content area */}
-      <div className="flex gap-8">
-        {/* Article */}
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-medium mb-2">{article.title}</h1>
-          <div className="text-xs text-secondary mb-8">
-            Lv.{article.difficulty} · {article.wordCount} 词
+        {/* Title */}
+        <h1 className="text-xl font-semibold text-fg-primary mb-2">{article.title}</h1>
+        <div className="text-[13px] text-fg-muted mb-6">
+          Lv.{article.difficulty} · {article.wordCount} 词
+        </div>
+
+        {/* Scene tag if dialogue */}
+        {article.content.match(/^[A-Za-z]+:/) && (
+          <div className="inline-flex items-center gap-1.5 text-[12px] text-fg-muted bg-surface-secondary rounded-lg px-3 py-1.5 mb-6">
+            <span>🏢</span> Office lobby, Monday 8:15am
           </div>
+        )}
 
-          <div
-            ref={articleRef}
-            className="article-body"
-            onMouseUp={handleMouseUp}
-          >
-            {renderContent(article.content)}
-          </div>
+        {/* Content */}
+        <div
+          ref={articleRef}
+          className="article-body"
+          onMouseUp={handleMouseUp}
+        >
+          {renderContent(article.content)}
+        </div>
 
-          {/* Translation */}
-          {showTranslation && article.translation && (
-            <div className="mt-8 pt-8 border-t border-border">
-              <h3 className="text-xs text-secondary tracking-widest uppercase mb-4">中文翻译</h3>
-              <div className="text-sm text-secondary leading-relaxed whitespace-pre-wrap">
-                {article.translation}
-              </div>
+        {/* Translation */}
+        {showTranslation && article.translation && (
+          <div className="mt-8 pt-6 border-t border-border-light">
+            <h3 className="text-[13px] text-fg-muted mb-4">中文翻译</h3>
+            <div className="text-sm text-fg-secondary leading-relaxed whitespace-pre-wrap">
+              {article.translation}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between mt-12 pt-6 border-t border-border text-sm">
-            {prevArticleId ? (
-              <Link href={`/articles/${prevArticleId}`} className="text-secondary hover:text-foreground transition-colors">
-                ← 上一篇
-              </Link>
-            ) : <span />}
-            {nextArticleId ? (
-              <Link href={`/articles/${nextArticleId}`} className="text-secondary hover:text-foreground transition-colors">
-                下一篇 →
-              </Link>
-            ) : (
-              <button
-                onClick={async () => {
-                  const res = await fetch('/api/articles', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ topicId: topic.id }),
-                  })
-                  if (res.ok && res.body) {
-                    const reader = res.body.getReader()
-                    const decoder = new TextDecoder()
-                    let fullText = ''
-                    let meta: { topicId: string; sequence: number; difficulty: number; reviewWordIds: string[] } | null = null
-                    while (true) {
-                      const { done, value } = await reader.read()
-                      if (done) break
-                      fullText += decoder.decode(value, { stream: true })
-                      if (!meta && fullText.includes('__META__')) {
-                        const m = fullText.match(/__META__(.*?)__META__/)
-                        if (m) { meta = JSON.parse(m[1]); fullText = fullText.replace(/__META__.*?__META__\n?/, '') }
-                      }
-                    }
-                    const jsonMatch = fullText.match(/\{[\s\S]*\}/)
-                    if (jsonMatch && meta) {
-                      const parsed = JSON.parse(jsonMatch[0])
-                      const r = await fetch('/api/articles/new/finalize', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ title: parsed.title, content: parsed.content, translation: parsed.translation || '', difficulty: meta.difficulty, topicId: meta.topicId, sequence: meta.sequence, wordCount: parsed.content?.split(/\s+/).length || 0, reviewWordIds: JSON.stringify(meta.reviewWordIds || []) }),
-                      })
-                      const result = await r.json()
-                      if (result.id) router.push(`/articles/${result.id}`)
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-10 pt-6 border-t border-border-light text-sm">
+          {prevArticleId ? (
+            <Link href={`/articles/${prevArticleId}`} className="text-fg-muted hover:text-accent transition-colors">
+              ← 上一篇
+            </Link>
+          ) : <span />}
+          {nextArticleId ? (
+            <Link href={`/articles/${nextArticleId}`} className="text-fg-muted hover:text-accent transition-colors">
+              下一篇 →
+            </Link>
+          ) : (
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/articles', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ topicId: topic.id }),
+                })
+                if (res.ok && res.body) {
+                  const reader = res.body.getReader()
+                  const decoder = new TextDecoder()
+                  let fullText = ''
+                  let meta: { topicId: string; sequence: number; difficulty: number; reviewWordIds: string[] } | null = null
+                  while (true) {
+                    const { done, value } = await reader.read()
+                    if (done) break
+                    fullText += decoder.decode(value, { stream: true })
+                    if (!meta && fullText.includes('__META__')) {
+                      const m = fullText.match(/__META__(.*?)__META__/)
+                      if (m) { meta = JSON.parse(m[1]); fullText = fullText.replace(/__META__.*?__META__\n?/, '') }
                     }
                   }
-                }}
-                className="text-secondary hover:text-foreground transition-colors"
-              >
-                生成下一篇 →
-              </button>
-            )}
-          </div>
+                  const jsonMatch = fullText.match(/\{[\s\S]*\}/)
+                  if (jsonMatch && meta) {
+                    const parsed = JSON.parse(jsonMatch[0])
+                    const r = await fetch('/api/articles/new/finalize', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ title: parsed.title, content: parsed.content, translation: parsed.translation || '', difficulty: meta.difficulty, topicId: meta.topicId, sequence: meta.sequence, wordCount: parsed.content?.split(/\s+/).length || 0, reviewWordIds: JSON.stringify(meta.reviewWordIds || []) }),
+                    })
+                    const result = await r.json()
+                    if (result.id) router.push(`/articles/${result.id}`)
+                  }
+                }
+              }}
+              className="text-fg-muted hover:text-accent transition-colors"
+            >
+              生成下一篇 →
+            </button>
+          )}
         </div>
-
-        {/* Word Panel */}
-        <WordPanel
-          words={wordContexts}
-          reviewWordIds={reviewWordIds}
-          accent={settings.accent}
-        />
       </div>
+
+      {/* Word Panel */}
+      <WordPanel
+        words={wordContexts}
+        reviewWordIds={reviewWordIds}
+        accent={settings.accent}
+      />
 
       {/* Popover */}
       {popover && (

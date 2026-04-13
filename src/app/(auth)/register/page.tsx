@@ -38,52 +38,57 @@ export default function RegisterPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label className="block text-xs text-secondary mb-1.5 tracking-wide uppercase">邮箱</label>
-        <input
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          required
-          className="w-full px-3 py-2.5 border border-border bg-card text-sm focus:border-accent transition-colors"
-          placeholder="your@email.com"
-        />
-      </div>
-      <div>
-        <label className="block text-xs text-secondary mb-1.5 tracking-wide uppercase">密码</label>
-        <input
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          required
-          className="w-full px-3 py-2.5 border border-border bg-card text-sm focus:border-accent transition-colors"
-          placeholder="至少 8 位"
-        />
-      </div>
-      <div>
-        <label className="block text-xs text-secondary mb-1.5 tracking-wide uppercase">确认密码</label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
-          required
-          className="w-full px-3 py-2.5 border border-border bg-card text-sm focus:border-accent transition-colors"
-          placeholder="再次输入密码"
-        />
-      </div>
-      {error && <p className="text-xs text-error">{error}</p>}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2.5 bg-accent text-white text-sm tracking-wide hover:bg-accent-hover transition-colors disabled:opacity-50"
-      >
-        {loading ? '注册中...' : '注册'}
-      </button>
-      <p className="text-center text-xs text-secondary">
-        已有账号？
-        <Link href="/login" className="text-foreground underline underline-offset-2 ml-1">登录</Link>
-      </p>
-    </form>
+    <div>
+      <h2 className="text-xl font-semibold text-fg-primary mb-1">创建账号</h2>
+      <p className="text-sm text-fg-muted mb-8">注册开始你的英语阅读之旅</p>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-[13px] text-fg-secondary mb-1.5">邮箱</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card text-sm focus:border-accent transition-colors"
+            placeholder="you@example.com"
+          />
+        </div>
+        <div>
+          <label className="block text-[13px] text-fg-secondary mb-1.5">密码</label>
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card text-sm focus:border-accent transition-colors"
+            placeholder="至少 8 位"
+          />
+        </div>
+        <div>
+          <label className="block text-[13px] text-fg-secondary mb-1.5">确认密码</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            required
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card text-sm focus:border-accent transition-colors"
+            placeholder="再次输入密码"
+          />
+        </div>
+        {error && <p className="text-xs text-danger">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2.5 bg-accent text-fg-inverse text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-50"
+        >
+          {loading ? '注册中...' : '注册'}
+        </button>
+        <p className="text-center text-[13px] text-fg-muted pt-2">
+          已有账号？
+          <Link href="/login" className="text-accent font-medium ml-1 hover:underline">登录</Link>
+        </p>
+      </form>
+    </div>
   )
 }

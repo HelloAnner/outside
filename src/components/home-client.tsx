@@ -29,6 +29,7 @@ interface Props {
   topics: Topic[]
   recentArticles: RecentArticle[]
   stats: { total: number; weekNew: number; needReview: number }
+  readDays: number
 }
 
 function timeAgo(date: Date | null): string {
@@ -44,95 +45,159 @@ function timeAgo(date: Date | null): string {
   return `${Math.floor(days / 30)}月前`
 }
 
-export function HomeClient({ topics, recentArticles, stats }: Props) {
+const TOPIC_ICONS: Record<string, { emoji: string; bg: string }> = {
+  '日常口语': { emoji: '💬', bg: '#FF9500' },
+  '职场英语': { emoji: '💼', bg: '#5856D6' },
+  '旅行英语': { emoji: '✈️', bg: '#34C759' },
+  '随便聊聊': { emoji: '🎲', bg: '#FF2D55' },
+  '科技前沿': { emoji: '🔬', bg: '#007AFF' },
+  '商务邮件': { emoji: '📧', bg: '#AF52DE' },
+}
+
+function getTopicIcon(name: string) {
+  return TOPIC_ICONS[name] || { emoji: '📖', bg: '#8E8E93' }
+}
+
+export function HomeClient({ topics, recentArticles, stats, readDays }: Props) {
   const router = useRouter()
   const [freeInput, setFreeInput] = useState('')
-  const [generating, setGenerating] = useState(false)
 
   const builtinTopics = topics.filter(t => t.isBuiltin)
   const customTopics = topics.filter(t => !t.isBuiltin)
 
+  // Find a recommended topic (first builtin with most articles, or first)
+  const recommended = builtinTopics.length > 0
+    ? builtinTopics.reduce((a, b) => a.articlesCount >= b.articlesCount ? a : b)
+    : topics[0]
+
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-12">
+    <div className="px-9 py-7">
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
         {[
           { label: '已学单词', value: stats.total },
           { label: '本周新增', value: stats.weekNew },
-          { label: '待复习', value: stats.needReview },
+          { label: '阅读天', value: readDays },
         ].map(s => (
-          <div key={s.label} className="bg-card border border-border p-5">
-            <div className="text-2xl font-light">{s.value}</div>
-            <div className="text-xs text-secondary mt-1">{s.label}</div>
+          <div key={s.label} className="bg-surface-card rounded-xl border border-border-light px-5 py-4">
+            <div className="text-[28px] font-semibold tracking-tight text-fg-primary">{s.value}</div>
+            <div className="text-[13px] text-fg-muted mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Topic Grid */}
-      <section className="mb-12">
-        <h2 className="text-xs text-secondary tracking-widest uppercase mb-5">选择主题，生成新文章</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {builtinTopics.map(t => (
-            <Link
-              key={t.id}
-              href={`/topics/${t.id}`}
-              className="bg-card border border-border p-4 hover:border-accent transition-colors group"
-            >
-              <div className="text-sm font-medium group-hover:text-accent">{t.name}</div>
-              <div className="text-xs text-secondary mt-2">已读 {t.articlesCount} 篇</div>
-            </Link>
-          ))}
+      {/* Today's recommendation */}
+      {recommended && (
+        <section className="mb-6">
+          <h2 className="text-[13px] text-fg-muted mb-3">今日推荐</h2>
+          <Link
+            href={`/topics/${recommended.id}`}
+            className="block bg-surface-card rounded-xl border border-border-light px-5 py-4 hover:border-accent/30 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[15px] font-medium text-fg-primary">{recommended.name}</div>
+                <div className="text-[13px] text-fg-muted mt-1">{recommended.description}</div>
+              </div>
+              <span className="text-sm text-accent font-medium px-4 py-1.5 bg-accent-light rounded-lg shrink-0 ml-4">
+                开始阅读
+              </span>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* Topics grid */}
+      <section className="mb-6">
+        <h2 className="text-[13px] text-fg-muted mb-3">选择主题</h2>
+        <div className="grid grid-cols-4 gap-3 mb-3">
+          {builtinTopics.map(t => {
+            const icon = getTopicIcon(t.name)
+            return (
+              <Link
+                key={t.id}
+                href={`/topics/${t.id}`}
+                className="bg-surface-card rounded-xl border border-border-light px-4 py-3.5 hover:border-accent/30 transition-colors flex items-center gap-3"
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
+                  style={{ background: `${icon.bg}18` }}
+                >
+                  {icon.emoji}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[13px] font-medium text-fg-primary truncate">{t.name}</div>
+                  <div className="text-[12px] text-fg-muted">已读 {t.articlesCount} 篇</div>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+        <div className="grid grid-cols-4 gap-3">
           {customTopics.map(t => (
             <Link
               key={t.id}
               href={`/topics/${t.id}`}
-              className="bg-card border border-border p-4 hover:border-accent transition-colors group"
+              className="bg-surface-card rounded-xl border border-border-light px-4 py-3.5 hover:border-accent/30 transition-colors flex items-center gap-3"
             >
-              <div className="text-sm font-medium group-hover:text-accent">{t.name}</div>
-              <div className="text-xs text-secondary mt-2">已读 {t.articlesCount} 篇</div>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 bg-surface-secondary">
+                📝
+              </div>
+              <div className="min-w-0">
+                <div className="text-[13px] font-medium text-fg-primary truncate">{t.name}</div>
+                <div className="text-[12px] text-fg-muted">已读 {t.articlesCount} 篇</div>
+              </div>
             </Link>
           ))}
           <Link
             href="/topics/new"
-            className="border border-dashed border-border p-4 hover:border-accent transition-colors flex items-center justify-center"
+            className="rounded-xl border border-dashed border-border px-4 py-3.5 hover:border-accent/50 transition-colors flex items-center gap-3"
           >
-            <span className="text-sm text-secondary">+ 新建主题</span>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-fg-muted bg-surface-secondary shrink-0">
+              +
+            </div>
+            <span className="text-[13px] text-fg-muted">新建主题</span>
           </Link>
         </div>
       </section>
 
-      {/* Free topic input */}
-      <section className="mb-12">
-        <div className="relative">
+      {/* Free input */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 bg-surface-card rounded-xl border border-border-light px-4 h-[42px]">
+          <span className="text-fg-muted text-sm">✦</span>
           <input
             type="text"
             value={freeInput}
             onChange={e => setFreeInput(e.target.value)}
             placeholder="自由主题：描述你想读什么..."
-            className="w-full px-4 py-3 border border-border bg-card text-sm"
+            className="flex-1 bg-transparent text-sm border-0 outline-none placeholder:text-fg-muted"
             onKeyDown={e => {
               if (e.key === 'Enter' && freeInput.trim()) {
                 router.push(`/topics/new?name=${encodeURIComponent(freeInput)}&format=free`)
               }
             }}
           />
+          <span className="text-[12px] text-fg-muted">快速生成</span>
         </div>
-      </section>
+      </div>
 
       {/* Recent articles */}
       {recentArticles.length > 0 && (
         <section>
-          <h2 className="text-xs text-secondary tracking-widest uppercase mb-5">最近阅读</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {recentArticles.map(a => (
+          <h2 className="text-[13px] text-fg-muted mb-3">最近阅读</h2>
+          <div className="grid grid-cols-3 gap-3">
+            {recentArticles.slice(0, 3).map(a => (
               <Link
                 key={a.id}
                 href={`/articles/${a.id}`}
-                className="bg-card border border-border p-4 hover:border-accent transition-colors"
+                className="bg-surface-card rounded-xl border border-border-light px-5 py-4 hover:border-accent/30 transition-colors"
               >
-                <div className="text-sm font-medium">{a.title}</div>
-                <div className="text-xs text-secondary mt-2">
-                  {a.topicName} · Lv.{a.difficulty} · {a.wordCount} 词 · {timeAgo(a.createdAt)}
+                <div className="text-[14px] font-medium text-fg-primary mb-2">{a.title}</div>
+                <div className="text-[12px] text-fg-muted">
+                  {a.topicName} · Lv.{a.difficulty} · {a.wordCount} 词
+                </div>
+                <div className="text-[12px] text-fg-muted mt-0.5">
+                  {timeAgo(a.createdAt)}
                 </div>
               </Link>
             ))}

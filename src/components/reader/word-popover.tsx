@@ -39,45 +39,44 @@ export function WordPopover({ word, x, y, loading, data, accent, onClose }: Prop
     return () => document.removeEventListener('mousedown', handleClick)
   }, [onClose])
 
-  // Adjust position to not overflow viewport
   const style: React.CSSProperties = {
     position: 'absolute',
-    left: `${Math.max(16, Math.min(x - 120, window.innerWidth - 260))}px`,
+    left: `${Math.max(16, Math.min(x - 120, window.innerWidth - 280))}px`,
     top: `${y}px`,
     zIndex: 100,
   }
 
   return (
-    <div ref={ref} style={style} className="w-60 bg-card border border-border shadow-lg p-4">
+    <div ref={ref} style={style} className="w-64 bg-surface-card rounded-xl border border-border shadow-lg shadow-black/8 p-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium">{word}</span>
+        <span className="text-[14px] font-medium text-fg-primary">{word}</span>
         <button
           onClick={() => speak(word, accent)}
-          className="text-xs text-secondary hover:text-foreground p-1"
+          className="text-[12px] text-fg-muted hover:text-accent transition-colors p-0.5"
         >
-          &#128266;
+          🔊
         </button>
       </div>
 
       {loading ? (
-        <div className="text-xs text-secondary">翻译中...</div>
+        <div className="text-[13px] text-fg-muted">翻译中...</div>
       ) : data ? (
         <div className="space-y-1.5">
           {data.phonetic && (
-            <div className="text-xs text-tertiary">{data.phonetic}</div>
+            <div className="text-[12px] text-fg-muted">{data.phonetic}</div>
           )}
           {data.pos && (
-            <div className="text-xs text-tertiary">{data.pos}</div>
+            <div className="text-[12px] text-accent">{data.pos}</div>
           )}
-          <div className="text-xs text-secondary">{data.definition}</div>
+          <div className="text-[13px] text-fg-secondary">{data.definition}</div>
           {data.sentence_translation && (
-            <div className="text-xs text-tertiary mt-2 pt-2 border-t border-border italic">
+            <div className="text-[12px] text-fg-muted mt-2 pt-2 border-t border-border-light italic">
               {data.sentence_translation}
             </div>
           )}
         </div>
       ) : (
-        <div className="text-xs text-error">翻译失败</div>
+        <div className="text-[13px] text-danger">翻译失败</div>
       )}
     </div>
   )

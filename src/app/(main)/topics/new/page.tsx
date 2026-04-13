@@ -119,46 +119,52 @@ export default function NewTopicPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-10">
-      <Link href="/" className="text-xs text-secondary hover:text-foreground transition-colors">← 返回</Link>
-      <h1 className="text-xl font-medium mt-4 mb-8">{editId ? '编辑主题' : '新建主题'}</h1>
+    <div className="px-9 py-7">
+      <div className="flex items-center gap-3 mb-6">
+        <Link href="/" className="text-fg-muted hover:text-fg-secondary transition-colors text-sm">
+          ‹
+        </Link>
+        <h1 className="text-xl font-semibold text-fg-primary">
+          {editId ? '编辑主题' : '新建主题'}
+        </h1>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="max-w-[640px] space-y-5">
         <div>
-          <label className="block text-xs text-secondary mb-1.5 tracking-wide uppercase">主题名称 *</label>
+          <label className="block text-[13px] text-fg-secondary mb-1.5">主题名称 *</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             required
-            className="w-full px-3 py-2.5 border border-border bg-card text-sm"
-            placeholder="如：医学英语、法律合同、游戏评测"
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card text-sm focus:border-accent transition-colors"
+            placeholder="如：医学英语"
           />
         </div>
 
         <div>
-          <label className="block text-xs text-secondary mb-1.5 tracking-wide uppercase">主题描述 *</label>
+          <label className="block text-[13px] text-fg-secondary mb-1.5">主题描述 *</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             required
             rows={2}
-            className="w-full px-3 py-2.5 border border-border bg-card text-sm resize-none"
-            placeholder="一句话说明学习目标"
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-card text-sm resize-none focus:border-accent transition-colors"
+            placeholder="学习医疗场景下的词汇通识，药名药效、就诊场景、病历文书翻译"
           />
         </div>
 
         <div>
-          <label className="block text-xs text-secondary mb-1.5 tracking-wide uppercase">内容形式 *</label>
+          <label className="block text-[13px] text-fg-secondary mb-1.5">内容形式 *</label>
           <div className="flex flex-wrap gap-2">
             {FORMAT_OPTIONS.map(opt => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setContentFormat(opt.value)}
-                className={`px-3 py-1.5 text-xs border transition-colors ${
+                className={`px-3 py-1.5 text-[13px] rounded-lg border transition-colors ${
                   contentFormat === opt.value
-                    ? 'border-accent bg-accent text-white'
-                    : 'border-border hover:border-accent'
+                    ? 'border-accent bg-accent text-fg-inverse'
+                    : 'border-border text-fg-secondary hover:border-accent/50'
                 }`}
               >
                 {opt.label}
@@ -170,27 +176,27 @@ export default function NewTopicPage() {
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
-          className="text-xs text-secondary hover:text-foreground transition-colors"
+          className="text-[13px] text-fg-muted hover:text-accent transition-colors"
         >
           {showAdvanced ? '▾ 收起高级设置' : '▸ 高级设置'}
         </button>
 
         {showAdvanced && (
-          <div className="space-y-5 border border-dashed border-border p-4">
+          <div className="space-y-5 rounded-xl border border-border-light bg-surface-card p-5">
             <div>
-              <label className="block text-xs text-secondary mb-1.5">生成指令（选填）</label>
+              <label className="block text-[13px] text-fg-secondary mb-1.5">生成指令（选填）</label>
               <textarea
                 value={promptTemplate}
                 onChange={e => setPromptTemplate(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2.5 border border-border bg-card text-sm resize-none"
-                placeholder="补充给 AI 的提示词"
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-primary text-sm resize-none focus:border-accent transition-colors"
+                placeholder="编相关真实介绍文章，有趣有用，一定包含参考词汇。术语必须在文中详细释义。希望你为无诊疗经历的学生场景学习"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-secondary mb-1.5">起始难度</label>
+                <label className="block text-[13px] text-fg-secondary mb-1.5">起始难度</label>
                 <input
                   value={difficultyStart}
                   onChange={e => setDifficultyStart(e.target.value)}
@@ -198,12 +204,12 @@ export default function NewTopicPage() {
                   min="1"
                   max="10"
                   step="1"
-                  className="w-full px-3 py-2.5 border border-border bg-card text-sm"
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-primary text-sm focus:border-accent transition-colors"
                   placeholder="默认 3"
                 />
               </div>
               <div>
-                <label className="block text-xs text-secondary mb-1.5">难度递增步长</label>
+                <label className="block text-[13px] text-fg-secondary mb-1.5">难度递增步长</label>
                 <input
                   value={difficultyStep}
                   onChange={e => setDifficultyStep(e.target.value)}
@@ -211,56 +217,32 @@ export default function NewTopicPage() {
                   min="0.1"
                   max="2"
                   step="0.1"
-                  className="w-full px-3 py-2.5 border border-border bg-card text-sm"
-                  placeholder="默认 0.3"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-secondary mb-1.5">复习词占比 (%)</label>
-                <input
-                  value={reviewRatio}
-                  onChange={e => setReviewRatio(e.target.value)}
-                  type="number"
-                  min="0"
-                  max="100"
-                  className="w-full px-3 py-2.5 border border-border bg-card text-sm"
-                  placeholder="默认 30"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-secondary mb-1.5">新词密度（每百词）</label>
-                <input
-                  value={newWordDensity}
-                  onChange={e => setNewWordDensity(e.target.value)}
-                  type="number"
-                  min="1"
-                  max="10"
-                  className="w-full px-3 py-2.5 border border-border bg-card text-sm"
-                  placeholder="默认 3"
+                  className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-primary text-sm focus:border-accent transition-colors"
+                  placeholder="0.3"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs text-secondary mb-1.5">参考词汇（选填，逗号分隔）</label>
+              <label className="block text-[13px] text-fg-secondary mb-1.5">参考词汇（选填，逗号分隔）</label>
               <textarea
                 value={referenceWords}
                 onChange={e => setReferenceWords(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2.5 border border-border bg-card text-sm resize-none"
-                placeholder="diagnosis, symptom, prescription..."
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-surface-primary text-sm resize-none focus:border-accent transition-colors"
+                placeholder="diagnosis, symptom, prescription, chronic, acute, inflammation"
               />
             </div>
           </div>
         )}
 
-        {error && <p className="text-xs text-error">{error}</p>}
+        {error && <p className="text-[13px] text-danger">{error}</p>}
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2.5 bg-accent text-white text-sm hover:bg-accent-hover transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 bg-accent text-fg-inverse text-sm font-medium rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-50"
           >
             {loading ? '保存中...' : '保存主题'}
           </button>
@@ -268,7 +250,7 @@ export default function NewTopicPage() {
             <button
               type="button"
               onClick={handleDelete}
-              className="px-6 py-2.5 text-sm text-error border border-error/30 hover:bg-error/5 transition-colors"
+              className="px-5 py-2.5 text-sm text-danger border border-danger/30 rounded-lg hover:bg-danger/5 transition-colors"
             >
               删除主题
             </button>
