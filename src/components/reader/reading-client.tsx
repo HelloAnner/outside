@@ -71,10 +71,20 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
     wordContexts.filter(wc => reviewWordIds.includes(wc.wordId)).map(wc => wc.text.toLowerCase())
   )
 
+  const speakerColorsRef = useRef<Map<string, string>>(new Map())
+  const SPEAKER_PALETTE = ['#5856D6', '#43A047', '#E65100', '#00838F', '#6A1B9A', '#C62828']
+
+  function getSpeakerColor(name: string): string {
+    const map = speakerColorsRef.current
+    if (!map.has(name)) {
+      map.set(name, SPEAKER_PALETTE[map.size % SPEAKER_PALETTE.length])
+    }
+    return map.get(name)!
+  }
+
   function renderContent(content: string) {
     const paragraphs = content.split('\n').filter(Boolean)
     return paragraphs.map((p, i) => {
-      // Check if it's a dialogue line (starts with name:)
       const dialogueMatch = p.match(/^([A-Za-z]+):\s*(.*)$/)
 
       const tokens = (dialogueMatch ? dialogueMatch[2] : p).split(/(\b\w+\b)/g)
@@ -96,10 +106,11 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
       })
 
       if (dialogueMatch) {
+        const color = getSpeakerColor(dialogueMatch[1])
         return (
           <div key={i} className="flex gap-3 mb-4">
-            <span className="text-accent font-medium text-sm shrink-0 pt-0.5">{dialogueMatch[1]}:</span>
-            <p className="flex-1">{rendered}</p>
+            <span className="font-semibold text-[14px] shrink-0 pt-0.5" style={{ color }}>{dialogueMatch[1]}:</span>
+            <p className="flex-1 text-[15px] leading-relaxed">{rendered}</p>
           </div>
         )
       }
@@ -203,9 +214,10 @@ export function ReadingClient({ article, topic, wordContexts: initialContexts, r
         <div className="flex items-center justify-between mb-6">
           <Link
             href={`/topics/${topic.id}`}
-            className="text-[13px] text-fg-muted hover:text-accent transition-colors"
+            className="flex items-center gap-2 text-[13px] text-fg-muted hover:text-accent transition-colors"
           >
-            ‹ {topic.name} #{String(article.sequence).padStart(2, '0')}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+            {topic.name} #{String(article.sequence).padStart(2, '0')}
           </Link>
           <div className="flex items-center gap-2">
             <button

@@ -36,10 +36,17 @@ export function WordPanel({ words, reviewWordIds, accent }: Props) {
 
   return (
     <aside className="w-[300px] shrink-0 border-l border-border bg-surface-card overflow-y-auto h-full">
-      <div className="px-5 py-5">
-        <h3 className="text-[14px] font-medium text-fg-primary mb-4">
-          本文生词
-        </h3>
+      <div className="px-5 py-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[14px] font-semibold text-fg-primary">
+            本文生词
+          </h3>
+          {words.length > 0 && (
+            <span className="text-[12px] font-semibold text-accent bg-accent-light rounded-full h-[22px] min-w-[22px] flex items-center justify-center px-2">
+              {words.length}
+            </span>
+          )}
+        </div>
 
         {words.length === 0 && (
           <p className="text-[13px] text-fg-muted">划选文中单词来标记生词</p>
@@ -75,22 +82,23 @@ export function WordPanel({ words, reviewWordIds, accent }: Props) {
 
 function WordCard({ word: w, accent, isReview }: { word: WordContext; accent: 'us' | 'uk'; isReview: boolean }) {
   return (
-    <div className={`rounded-lg p-3 ${isReview ? 'bg-review' : 'bg-surface-primary'}`}>
-      <div className="flex items-center justify-between mb-0.5">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[14px] font-medium text-fg-primary">{w.text}</span>
-          {w.phonetic && <span className="text-[12px] text-fg-muted">{w.phonetic}</span>}
+    <div className={`rounded-[10px] p-3.5 ${isReview ? 'bg-review' : 'bg-surface-primary'}`}>
+      {isReview && (
+        <div className="flex items-center gap-1 mb-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" /></svg>
+          <span className="text-[11px] text-accent">复习词</span>
         </div>
-        <button
-          onClick={() => speak(w.text, accent)}
-          className="text-[12px] text-fg-muted hover:text-accent transition-colors p-0.5"
-          title="朗读"
-        >
-          🔊
-        </button>
+      )}
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[15px] font-semibold text-fg-primary">{w.text}</span>
+        <span className="text-[12px] text-fg-muted">{w.phonetic}</span>
       </div>
-      {w.pos && <div className="text-[12px] text-accent mb-0.5">{w.pos}</div>}
       <div className="text-[13px] text-fg-secondary">{w.definition}</div>
+      {w.sentence && (
+        <div className="text-[12px] text-fg-muted italic mt-2 leading-relaxed">
+          &ldquo;{w.sentence}&rdquo;
+        </div>
+      )}
     </div>
   )
 }

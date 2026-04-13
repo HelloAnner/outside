@@ -29,7 +29,6 @@ interface Props {
   topics: Topic[]
   recentArticles: RecentArticle[]
   stats: { total: number; weekNew: number; needReview: number }
-  readDays: number
 }
 
 function timeAgo(date: Date | null): string {
@@ -46,19 +45,18 @@ function timeAgo(date: Date | null): string {
 }
 
 const TOPIC_ICONS: Record<string, { emoji: string; bg: string }> = {
-  '日常口语': { emoji: '💬', bg: '#FF9500' },
-  '职场英语': { emoji: '💼', bg: '#5856D6' },
-  '旅行英语': { emoji: '✈️', bg: '#34C759' },
-  '随便聊聊': { emoji: '🎲', bg: '#FF2D55' },
-  '科技前沿': { emoji: '🔬', bg: '#007AFF' },
-  '商务邮件': { emoji: '📧', bg: '#AF52DE' },
+  '日常口语': { emoji: '💬', bg: '#EEF0FF' },
+  '职场英语': { emoji: '💼', bg: '#FFF3E0' },
+  '雅思备考': { emoji: '📝', bg: '#E8F5E9' },
+  '科技前沿': { emoji: '🔬', bg: '#E3F2FD' },
+  '故事阅读': { emoji: '📖', bg: '#FCE4EC' },
 }
 
 function getTopicIcon(name: string) {
-  return TOPIC_ICONS[name] || { emoji: '📖', bg: '#8E8E93' }
+  return TOPIC_ICONS[name] || { emoji: '📖', bg: '#F5F5F7' }
 }
 
-export function HomeClient({ topics, recentArticles, stats, readDays }: Props) {
+export function HomeClient({ topics, recentArticles, stats }: Props) {
   const router = useRouter()
   const [freeInput, setFreeInput] = useState('')
 
@@ -75,12 +73,12 @@ export function HomeClient({ topics, recentArticles, stats, readDays }: Props) {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: '已学单词', value: stats.total },
-          { label: '本周新增', value: stats.weekNew },
-          { label: '阅读天', value: readDays },
+          { label: '已学单词', value: stats.total, accent: false },
+          { label: '本周新增', value: stats.weekNew, accent: true },
+          { label: '待复习', value: stats.needReview, accent: false },
         ].map(s => (
-          <div key={s.label} className="bg-surface-card rounded-xl border border-border-light px-5 py-4">
-            <div className="text-[28px] font-semibold tracking-tight text-fg-primary">{s.value}</div>
+          <div key={s.label} className="bg-surface-card rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] px-5 py-5">
+            <div className={`text-[30px] font-bold tracking-tight ${s.accent ? 'text-accent' : 'text-fg-primary'}`} style={{ letterSpacing: '-1px' }}>{s.value}</div>
             <div className="text-[13px] text-fg-muted mt-0.5">{s.label}</div>
           </div>
         ))}
@@ -89,7 +87,7 @@ export function HomeClient({ topics, recentArticles, stats, readDays }: Props) {
       {/* Today's recommendation */}
       {recommended && (
         <section className="mb-6">
-          <h2 className="text-[13px] text-fg-muted mb-3">今日推荐</h2>
+          <h2 className="text-[12px] font-semibold text-fg-muted tracking-[1.5px] mb-3">今日推荐</h2>
           <Link
             href={`/topics/${recommended.id}`}
             className="block bg-surface-card rounded-xl border border-border-light px-5 py-4 hover:border-accent/30 transition-colors"
@@ -109,7 +107,7 @@ export function HomeClient({ topics, recentArticles, stats, readDays }: Props) {
 
       {/* Topics grid */}
       <section className="mb-6">
-        <h2 className="text-[13px] text-fg-muted mb-3">选择主题</h2>
+        <h2 className="text-[12px] font-semibold text-fg-muted tracking-[1.5px] mb-3">选择主题</h2>
         <div className="grid grid-cols-4 gap-3 mb-3">
           {builtinTopics.map(t => {
             const icon = getTopicIcon(t.name)
@@ -117,11 +115,11 @@ export function HomeClient({ topics, recentArticles, stats, readDays }: Props) {
               <Link
                 key={t.id}
                 href={`/topics/${t.id}`}
-                className="bg-surface-card rounded-xl border border-border-light px-4 py-3.5 hover:border-accent/30 transition-colors flex items-center gap-3"
+                className="bg-surface-card rounded-[10px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] px-3.5 py-3.5 hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-shadow flex items-center gap-3"
               >
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
-                  style={{ background: `${icon.bg}18` }}
+                  className="w-[34px] h-[34px] rounded-lg flex items-center justify-center text-sm shrink-0"
+                  style={{ background: icon.bg }}
                 >
                   {icon.emoji}
                 </div>
@@ -184,7 +182,7 @@ export function HomeClient({ topics, recentArticles, stats, readDays }: Props) {
       {/* Recent articles */}
       {recentArticles.length > 0 && (
         <section>
-          <h2 className="text-[13px] text-fg-muted mb-3">最近阅读</h2>
+          <h2 className="text-[12px] font-semibold text-fg-muted tracking-[1.5px] mb-3">最近阅读</h2>
           <div className="grid grid-cols-3 gap-3">
             {recentArticles.slice(0, 3).map(a => (
               <Link

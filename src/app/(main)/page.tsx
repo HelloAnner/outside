@@ -41,11 +41,6 @@ export default async function HomePage() {
     .from(words)
     .where(and(eq(words.userId, userId), sql`${words.createdAt} > ${weekAgoTs}`))
 
-  // Count distinct reading days
-  const readDaysResult = await db.select({
-    count: sql<number>`count(distinct date(${articles.createdAt}, 'unixepoch'))`,
-  }).from(articles).where(eq(articles.userId, userId))
-
   const topicMap = Object.fromEntries(userTopics.map(t => [t.id, t.name]))
 
   return (
@@ -57,7 +52,6 @@ export default async function HomePage() {
         weekNew: weekNew[0]?.count || 0,
         needReview: (stats[0]?.unfamiliar || 0) + (stats[0]?.vague || 0),
       }}
-      readDays={readDaysResult[0]?.count || 0}
     />
   )
 }

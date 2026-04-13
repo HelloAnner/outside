@@ -125,19 +125,18 @@ export function TopicDetailClient({ topic, articles, nextDifficulty, totalWords,
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
-          <Link href="/" className="text-fg-muted hover:text-fg-secondary transition-colors text-sm">
-            ‹
+          <Link href="/" className="text-fg-muted hover:text-fg-secondary transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
           </Link>
           <h1 className="text-xl font-semibold text-fg-primary">{topic.name}</h1>
         </div>
-        {!topic.isBuiltin && (
-          <Link
-            href={`/topics/new?edit=${topic.id}`}
-            className="text-[13px] text-fg-muted hover:text-accent border border-border rounded-lg px-3 py-1.5 transition-colors"
-          >
-            编辑主题
-          </Link>
-        )}
+        <Link
+          href={`/topics/new?edit=${topic.id}`}
+          className="flex items-center gap-1.5 text-[12px] text-fg-secondary hover:text-accent border border-border rounded-lg px-3 h-8 transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
+          主题设置
+        </Link>
       </div>
 
       <p className="text-[14px] text-fg-muted mb-6 pl-5">{topic.description}</p>
@@ -187,7 +186,7 @@ export function TopicDetailClient({ topic, articles, nextDifficulty, totalWords,
       {/* Article list */}
       {articles.length > 0 && (
         <section>
-          <h2 className="text-[13px] text-fg-muted mb-3">往期文章</h2>
+          <h2 className="text-[12px] font-semibold text-fg-muted tracking-[1.5px] mb-2">往期文章</h2>
           <div className="bg-surface-card rounded-xl border border-border-light overflow-hidden divide-y divide-border-light">
             {articles.map(a => (
               <Link

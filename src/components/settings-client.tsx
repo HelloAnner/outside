@@ -92,9 +92,9 @@ export function SettingsClient({ email, settings: initial }: Props) {
             <button className="text-[13px] text-fg-muted hover:text-accent transition-colors">修改</button>
           </div>
           <div className="flex items-center justify-between px-5 py-3.5">
-            <span className="text-[13px] text-danger">注销账号</span>
-            <button onClick={handleLogout} className="text-[13px] text-fg-muted hover:text-danger transition-colors flex items-center gap-1">
-              🚪
+            <span className="text-[13px] text-danger">退出登录</span>
+            <button onClick={handleLogout} className="text-danger hover:opacity-70 transition-opacity">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
             </button>
           </div>
         </div>
@@ -255,6 +255,49 @@ export function SettingsClient({ email, settings: initial }: Props) {
                 </button>
               ))}
             </div>
+          </div>
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <span className="text-[13px] text-fg-secondary">口音偏好</span>
+            <span className="text-[13px] text-fg-primary">
+              <select
+                value={settings.accent}
+                onChange={e => save({ accent: e.target.value })}
+                className="text-[13px] text-fg-primary bg-transparent border-0 outline-none cursor-pointer text-right"
+              >
+                <option value="us">美式</option>
+                <option value="uk">英式</option>
+              </select>
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <span className="text-[13px] text-fg-secondary">划词自动朗读</span>
+            <button
+              onClick={() => save({ autoReadOnSelect: !settings.autoReadOnSelect })}
+              className={`w-10 h-[22px] rounded-full transition-colors relative ${
+                settings.autoReadOnSelect ? 'bg-accent' : 'bg-surface-secondary'
+              }`}
+            >
+              <span
+                className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform ${
+                  settings.autoReadOnSelect ? 'left-[20px]' : 'left-[2px]'
+                }`}
+              />
+            </button>
+          </div>
+          <div className="flex items-center justify-between px-5 py-3.5">
+            <span className="text-[13px] text-fg-secondary">自动发音</span>
+            <button
+              onClick={() => save({ autoPronounce: !settings.autoPronounce })}
+              className={`w-10 h-[22px] rounded-full transition-colors relative ${
+                settings.autoPronounce ? 'bg-accent' : 'bg-surface-secondary'
+              }`}
+            >
+              <span
+                className={`absolute top-[2px] w-[18px] h-[18px] rounded-full bg-white shadow-sm transition-transform ${
+                  settings.autoPronounce ? 'left-[20px]' : 'left-[2px]'
+                }`}
+              />
+            </button>
           </div>
         </div>
       </section>
